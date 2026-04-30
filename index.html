@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passa ou Repassa</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #FF6B00;
+  --primary-dark: #CC5500;
+  --secondary: #FFD700;
+  --bg: #0A0A1A;
+  --bg2: #12122A;
+  --bg3: #1A1A3A;
+  --text: #F0F0FF;
+  --text2: #AAAACC;
+  --green: #00E676;
+  --red: #FF1744;
+  --blue: #2979FF;
+  --purple: #AA00FF;
+  --card: #1E1E40;
+  --border: rgba(255,107,0,0.3);
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 20%, rgba(255,107,0,0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 80%, rgba(255,215,0,0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* SCREENS */
+.screen { display: none; flex-direction: column; min-height: 100vh; padding: 20px; }
+.screen.active { display: flex; }
+
+/* HEADER */
+.logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(36px, 8vw, 64px);
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  line-height: 1;
+}
+.subtitle { text-align: center; color: var(--text2); font-size: 13px; letter-spacing: 2px; margin-top: 4px; margin-bottom: 30px; }
+
+/* MENU GRID */
+.menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 500px; margin: 0 auto; width: 100%; }
+.menu-btn {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+.menu-btn:hover { border-color: var(--primary); transform: translateY(-2px); background: rgba(255,107,0,0.1); }
+.menu-btn .icon { font-size: 36px; line-height: 1; }
+
+/* BUTTONS */
+.btn {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border: none;
+  border-radius: var(--radius);
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn:active { transform: translateY(0); }
+.btn.secondary {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text2);
+}
+.btn.secondary:hover { border-color: var(--primary); color: var(--primary); background: rgba(255,107,0,0.08); }
+.btn.green-btn { background: linear-gradient(135deg, #00C853, #00E676); }
+.btn.red-btn { background: linear-gradient(135deg, #c62828, var(--red)); }
+.btn.small { padding: 8px 18px; font-size: 13px; }
+
+/* CARD */
+.card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+/* SETUP SCREEN */
+.setup-wrap { max-width: 600px; margin: 0 auto; width: 100%; }
+.section-title { font-family: 'Bebas Neue', cursive; font-size: 22px; letter-spacing: 2px; color: var(--primary); margin-bottom: 12px; }
+.player-count-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.count-btn {
+  width: 52px; height: 52px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.count-btn:hover, .count-btn.selected { border-color: var(--primary); background: rgba(255,107,0,0.15); color: var(--primary); }
+.player-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.player-input-wrap { position: relative; }
+.player-num { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--primary); font-size: 13px; }
+input[type="text"] {
+  width: 100%; background: var(--bg3); border: 1.5px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 14px; padding: 10px 12px 10px 36px;
+  transition: border-color 0.2s;
+}
+input[type="text"]:focus { outline: none; border-color: var(--primary); }
+
+/* BRACKET */
+.bracket-wrap { max-width: 900px; margin: 0 auto; width: 100%; overflow-x: auto; }
+.bracket-scroll { display: flex; gap: 40px; padding: 20px 0; min-width: max-content; }
+.bracket-round { display: flex; flex-direction: column; justify-content: space-around; }
+.round-label { font-family: 'Bebas Neue', cursive; font-size: 16px; color: var(--primary); letter-spacing: 2px; text-align: center; margin-bottom: 16px; }
+.match-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0;
+  margin: 8px 0;
+  min-width: 180px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.match-card:hover { border-color: var(--primary); }
+.match-card.active { border-color: var(--secondary); box-shadow: 0 0 16px rgba(255,215,0,0.2); }
+.match-card.done { border-color: var(--green); opacity: 0.7; }
+.match-player {
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.15s;
+}
+.match-player:last-child { border-bottom: none; }
+.match-player.winner { background: rgba(0,230,118,0.15); color: var(--green); }
+.match-player.loser { background: rgba(255,23,68,0.08); color: var(--text2); }
+.match-player.bye { background: rgba(41,121,255,0.12); color: var(--blue); font-style: italic; }
+.player-score-badge { background: rgba(255,107,0,0.2); border-radius: 6px; padding: 2px 8px; font-size: 12px; color: var(--primary); font-weight: 900; }
+
+/* GAME SCREEN */
+.game-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.match-info { text-align: center; flex: 1; }
+.vs-label { font-family: 'Bebas Neue', cursive; font-size: 40px; color: var(--secondary); }
+.score-board { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin-bottom: 24px; }
+.player-score-block { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; }
+.player-score-block.active-player { border-color: var(--secondary); background: rgba(255,215,0,0.08); }
+.player-score-block .name { font-weight: 800; font-size: 16px; word-break: break-word; }
+.player-score-block .pts { font-family: 'Bebas Neue', cursive; font-size: 56px; line-height: 1; color: var(--primary); }
+.q-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.q-number { font-size: 12px; color: var(--text2); margin-bottom: 8px; letter-spacing: 1px; }
+.q-text { font-size: 18px; font-weight: 700; line-height: 1.5; margin-bottom: 20px; }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opt-btn {
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.opt-btn:hover { border-color: var(--primary); background: rgba(255,107,0,0.1); }
+.opt-btn.correct { border-color: var(--green); background: rgba(0,230,118,0.15); color: var(--green); }
+.opt-btn.wrong { border-color: var(--red); background: rgba(255,23,68,0.1); color: var(--red); }
+.opt-btn.reveal { border-color: var(--secondary); background: rgba(255,215,0,0.08); }
+.opt-letter { width: 26px; height: 26px; border-radius: 6px; background: rgba(255,107,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: var(--primary); flex-shrink: 0; }
+.turn-indicator {
+  background: rgba(255,215,0,0.1);
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 8px;
+  padding: 10px 16px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--secondary);
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+.action-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.progress-bar { height: 6px; background: var(--bg3); border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 3px; transition: width 0.4s; }
+
+/* WINNER MODAL */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: var(--bg2);
+  border: 2px solid var(--primary);
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  max-width: 440px;
+  width: 100%;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.trophy { font-size: 72px; margin-bottom: 12px; }
+.winner-name { font-family: 'Bebas Neue', cursive; font-size: 48px; color: var(--secondary); }
+.winner-sub { color: var(--text2); margin-bottom: 24px; }
+
+/* RANKING */
+.ranking-wrap { max-width: 600px; margin: 0 auto; width: 100%; }
+.rank-item {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+}
+.rank-pos { font-family: 'Bebas Neue', cursive; font-size: 28px; width: 36px; text-align: center; }
+.rank-pos.gold { color: #FFD700; }
+.rank-pos.silver { color: #C0C0C0; }
+.rank-pos.bronze { color: #CD7F32; }
+.rank-name { flex: 1; font-weight: 800; font-size: 16px; }
+.rank-stat { text-align: right; }
+.rank-wins { font-family: 'Bebas Neue', cursive; font-size: 24px; color: var(--green); }
+.rank-games { font-size: 12px; color: var(--text2); }
+
+/* ADD QUESTIONS */
+.add-q-form { max-width: 600px; margin: 0 auto; width: 100%; }
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; color: var(--text2); font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+textarea {
+  width: 100%; background: var(--bg3); border: 1.5px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 14px; padding: 12px; resize: vertical; min-height: 80px;
+  transition: border-color 0.2s;
+}
+textarea:focus { outline: none; border-color: var(--primary); }
+.options-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.correct-mark { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); margin-top: 8px; }
+input[type="radio"] { accent-color: var(--primary); }
+.q-list { margin-top: 20px; }
+.q-list-item {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.q-list-num { font-family: 'Bebas Neue', cursive; font-size: 18px; color: var(--primary); width: 28px; flex-shrink: 0; }
+.q-list-text { flex: 1; font-size: 13px; line-height: 1.5; }
+.q-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 18px; flex-shrink: 0; opacity: 0.6; transition: opacity 0.2s; }
+.q-del:hover { opacity: 1; }
+
+/* NOTIFICATION */
+.notif {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--card); border: 1.5px solid var(--primary);
+  border-radius: 10px; padding: 12px 24px;
+  font-weight: 700; z-index: 200; transition: all 0.3s;
+  max-width: 90vw; text-align: center;
+}
+.notif.hidden { opacity: 0; pointer-events: none; top: -60px; }
+
+/* REPECHAGE BADGE */
+.repechage-badge {
+  background: rgba(170,0,255,0.2); border: 1px solid rgba(170,0,255,0.4);
+  border-radius: 6px; padding: 2px 8px; font-size: 11px; color: #CC88FF; font-weight: 700;
+}
+
+/* BACK BTN */
+.back-btn { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 14px; font-family: 'Nunito', sans-serif; display: flex; align-items: center; gap: 6px; padding: 0; margin-bottom: 16px; transition: color 0.2s; }
+.back-btn:hover { color: var(--primary); }
+
+/* TABS */
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg3); border-radius: 10px; padding: 4px; }
+.tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: none; color: var(--text2); font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+.tab-btn.active { background: var(--primary); color: white; }
+
+.answer-feedback {
+  text-align: center; padding: 16px;
+  border-radius: 10px; font-size: 18px; font-weight: 800;
+  margin-bottom: 16px;
+}
+.answer-feedback.correct-fb { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+.answer-feedback.wrong-fb { background: rgba(255,23,68,0.1); color: var(--red); border: 1px solid rgba(255,23,68,0.2); }
+.answer-feedback.skip-fb { background: rgba(41,121,255,0.1); color: var(--blue); border: 1px solid rgba(41,121,255,0.2); }
+
+/* CHAMPION SCREEN */
+.champion-wrap { text-align: center; padding: 40px 20px; max-width: 500px; margin: 0 auto; }
+.champion-trophy { font-size: 100px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+.confetti-piece {
+  position: fixed;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  animation: fall linear forwards;
+  pointer-events: none;
+}
+@keyframes fall {
+  0% { top: -20px; opacity: 1; }
+  100% { top: 110vh; opacity: 0; }
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+  .player-inputs { grid-template-columns: 1fr; }
+  .options-grid { grid-template-columns: 1fr; }
+  .score-board { grid-template-columns: 1fr; }
+  .options-form { grid-template-columns: 1fr; }
+  .menu-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NOTIFICATION -->
+<div class="notif hidden" id="notif"></div>
+
+<!-- WINNER MODAL -->
+<div class="modal-overlay hidden" id="matchWinnerModal">
+  <div class="modal-box">
+    <div class="trophy">🏆</div>
+    <div class="winner-name" id="modalWinnerName"></div>
+    <div class="winner-sub" id="modalWinnerSub"></div>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+      <button class="btn" onclick="advanceBracket()">Próxima partida ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAMPION MODAL -->
+<div class="modal-overlay hidden" id="championModal">
+  <div class="modal-box">
+    <div class="trophy" id="champTrophy">🏆</div>
+    <div style="font-family:'Bebas Neue',cursive;font-size:24px;color:var(--text2);letter-spacing:3px;">CAMPEÃO DO TORNEIO</div>
+    <div class="winner-name" id="champName" style="font-size:52px;"></div>
+    <div style="color:var(--text2);margin-bottom:24px;" id="champStats"></div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn" onclick="showScreen('rankingScreen')">Ver Ranking</button>
+      <button class="btn secondary" onclick="showScreen('homeScreen')">Menu Principal</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="homeScreen">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+    <div class="logo">Passa ou Repassa</div>
+    <div class="subtitle">⚡ QUIZ BATTLE ⚡</div>
+    <div class="menu-grid">
+      <button class="menu-btn" onclick="showScreen('setupScreen')">
+        <span class="icon">🏟️</span>
+        Novo Torneio
+      </button>
+      <button class="menu-btn" onclick="showBracket()">
+        <span class="icon">🔖</span>
+        Chaveamento
+      </button>
+      <button class="menu-btn" onclick="showScreen('rankingScreen');renderRanking()">
+        <span class="icon">🏆</span>
+        Ranking
+      </button>
+      <button class="menu-btn" onclick="showScreen('questionsScreen');renderQuestionList()">
+        <span class="icon">📝</span>
+        Perguntas
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div class="screen" id="setupScreen">
+  <button class="back-btn" onclick="showScreen('homeScreen')">← Voltar</button>
+  <div class="logo" style="font-size:36px;">Novo Torneio</div>
+  <div class="subtitle" style="margin-bottom:20px;">Configure o chaveamento</div>
+  <div class="setup-wrap">
+    <div class="section-title">Nº de Jogadores</div>
+    <div class="player-count-grid" id="playerCountGrid"></div>
+    <div class="section-title">Nome dos Jogadores</div>
+    <div class="player-inputs" id="playerInputs"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+      <button class="btn" onclick="startTournament()">Sortear Chaveamento ▶</button>
+      <button class="btn secondary" onclick="showScreen('homeScreen')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- BRACKET SCREEN -->
+<div class="screen" id="bracketScreen">
+  <button class="back-btn" onclick="showScreen('homeScreen')">← Menu</button>
+  <div class="logo" style="font-size:36px;">Chaveamento</div>
+  <div class="subtitle" id="bracketSubtitle" style="margin-bottom:16px;"></div>
+  <div class="bracket-wrap">
+    <div class="bracket-scroll" id="bracketScroll"></div>
+  </div>
+  <div style="text-align:center;margin-top:20px;" id="bracketActions"></div>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen" id="gameScreen">
+  <div class="game-header">
+    <button class="back-btn" style="margin:0" onclick="confirmQuit()">← Sair</button>
+    <div class="match-info">
+      <div id="roundLabel" style="font-size:12px;color:var(--text2);letter-spacing:2px;"></div>
+      <div id="matchLabel" style="font-family:'Bebas Neue',cursive;font-size:28px;color:var(--secondary);"></div>
+    </div>
+    <div style="width:60px;text-align:right;font-size:12px;color:var(--text2);" id="qCounter"></div>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <div class="score-board">
+    <div class="player-score-block" id="scoreBlock0">
+      <div class="name" id="scoreName0"></div>
+      <div class="pts" id="scoreVal0">0</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="vs-label">VS</div>
+      <div style="font-size:12px;color:var(--text2);">Melhor de 5</div>
+    </div>
+    <div class="player-score-block" id="scoreBlock1">
+      <div class="name" id="scoreName1"></div>
+      <div class="pts" id="scoreVal1">0</div>
+    </div>
+  </div>
+
+  <div class="turn-indicator" id="turnIndicator"></div>
+
+  <div class="q-card" id="questionCard">
+    <div class="q-number" id="qNumber"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="options-grid" id="optionsGrid"></div>
+  </div>
+
+  <div id="feedbackDiv" style="display:none;" class="answer-feedback"></div>
+
+  <div class="action-row" id="actionRow">
+    <button class="btn" id="btnPass" onclick="passQuestion()">Passar ↔</button>
+    <button class="btn red-btn" id="btnWrong" onclick="markWrong()" style="display:none;">Errou ✗</button>
+    <button class="btn green-btn" id="btnCorrect" onclick="markCorrect()" style="display:none;">Acertou ✓</button>
+    <button class="btn secondary small" id="btnReveal" onclick="revealAnswer()">Ver Resposta</button>
+  </div>
+</div>
+
+<!-- RANKING SCREEN -->
+<div class="screen" id="rankingScreen">
+  <button class="back-btn" onclick="showScreen('homeScreen')">← Voltar</button>
+  <div class="logo" style="font-size:36px;">Ranking</div>
+  <div class="subtitle" style="margin-bottom:16px;">Histórico do torneio</div>
+  <div class="ranking-wrap" id="rankingList"></div>
+  <div style="text-align:center;margin-top:16px;">
+    <button class="btn secondary" onclick="clearRanking()" style="font-size:13px;">Limpar Histórico</button>
+  </div>
+</div>
+
+<!-- QUESTIONS SCREEN -->
+<div class="screen" id="questionsScreen">
+  <button class="back-btn" onclick="showScreen('homeScreen')">← Voltar</button>
+  <div class="logo" style="font-size:36px;">Banco de Perguntas</div>
+  <div class="subtitle" style="margin-bottom:16px;"></div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tabView',this)">Ver Perguntas</button>
+    <button class="tab-btn" onclick="switchTab('tabAdd',this)">Adicionar</button>
+  </div>
+  <div id="tabView">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap;">
+      <div style="font-size:14px;color:var(--text2);" id="qCountLabel"></div>
+      <button class="btn secondary small" onclick="shuffleQuestions();renderQuestionList()">🔀 Embaralhar</button>
+    </div>
+    <div class="q-list" id="questionList"></div>
+  </div>
+  <div id="tabAdd" style="display:none;">
+    <div class="add-q-form">
+      <div class="form-group">
+        <label class="form-label">PERGUNTA</label>
+        <textarea id="newQText" placeholder="Digite a pergunta..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ALTERNATIVAS (marque a correta)</label>
+        <div class="options-form" id="optionsForms"></div>
+      </div>
+      <button class="btn" onclick="addQuestion()">Adicionar Pergunta ✚</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const INITIAL_QUESTIONS = [
+  {q:"Qual o nome do esquilo do filme 'A Era do Gelo' que vive atrás de uma noz?",opts:["Sid","Scrat","Diego","Manny"],correct:1},
+  {q:"No desenho 'Bob Esponja', qual é o ingrediente secreto do Hambúrguer de Siri?",opts:["Plâncton moído","Maionese de coral","Nunca foi revelado oficialmente","Amor e carinho"],correct:2},
+  {q:"Qual a cor do cavalo branco de Napoleão?",opts:["Preto","Marrom","Branco","Cinza"],correct:2},
+  {q:"Quem é o vilão principal que quer capturar os Smurfs?",opts:["Cruela","Gargamel","Esqueleto","Dr. Abobrinha"],correct:1},
+  {q:"Qual é o nome do melhor amigo do Mickey Mouse?",opts:["Pato Donald","Pateta","Pluto","Zé Carioca"],correct:1},
+  {q:"No Chaves, quem mora no 71 e é chamada de 'Bruxa'?",opts:["Dona Florinda","Malu","Dona Clotilde","Dona Neves"],correct:2},
+  {q:"Qual super-herói ganha poderes após ser picado por uma aranha radioativa?",opts:["Batman","Homem-Aranha","Homem-Formiga","Super-Homem"],correct:1},
+  {q:"Como se chama o ogro verde que vive em um pântano?",opts:["Hulk","Shrek","Grinch","Sullivan"],correct:1},
+  {q:"Quantos anões a Branca de Neve conheceu na floresta?",opts:["5","6","7","8"],correct:2},
+  {q:"Qual fruta é conhecida como a 'Rainha das Frutas' e fede muito?",opts:["Jaca","Durião (Durian)","Pitaya","Romã"],correct:1},
+  {q:"De onde vem o chocolate?",opts:["Da cana-de-açúcar","Do café","Do cacau","Da uva"],correct:2},
+  {q:"Qual país inventou a Pizza (como conhecemos hoje)?",opts:["França","Estados Unidos","Itália","Brasil"],correct:2},
+  {q:"Qual animal produz o mel?",opts:["Formiga","Abelha","Besouro","Vespa"],correct:1},
+  {q:"Qual o ingrediente principal da paçoca?",opts:["Castanha de Caju","Amendoim","Milho","Mandioca"],correct:1},
+  {q:"O 'Petit Gateau' é um bolinho recheado de quê?",opts:["Morango","Chocolate derretido","Doce de leite","Creme de baunilha"],correct:1},
+  {q:"Quantos corações tem um polvo?",opts:["1","2","3","Nenhum"],correct:2},
+  {q:"Qual a comida favorita do personagem Popeye?",opts:["Pizza","Hambúrguer","Espinafre","Cenoura"],correct:2},
+  {q:"Qual o planeta mais quente do sistema solar?",opts:["Mercúrio","Vênus","Marte","Júpiter"],correct:1},
+  {q:"Qual metal é conhecido por ser líquido à temperatura ambiente?",opts:["Ouro","Ferro","Mercúrio","Prata"],correct:2},
+  {q:"Como se chama o medo de lugares fechados?",opts:["Aracnofobia","Claustrofobia","Acrofobia","Hidrofobia"],correct:1},
+  {q:"Qual é o animal terrestre mais rápido do mundo?",opts:["Tigre","Guepardo (Chita)","Cavalo","Leão"],correct:1},
+  {q:"Quantos ossos tem o corpo humano de um adulto, aproximadamente?",opts:["150","206","300","412"],correct:1},
+  {q:"Qual animal é conhecido por 'mudar de cor' para se camuflar?",opts:["Cobra","Camaleão","Sapo","Lagartixa"],correct:1},
+  {q:"Qual o nome do cientista que formulou a Lei da Gravidade?",opts:["Albert Einstein","Isaac Newton","Galileu Galilei","Stephen Hawking"],correct:1},
+  {q:"Qual o único mamífero que consegue voar de verdade?",opts:["Esquilo-voador","Pinguim","Morcego","Avestruz"],correct:2},
+  {q:"Em qual país fica a Torre Eiffel?",opts:["Itália","França","Inglaterra","Alemanha"],correct:1},
+  {q:"Qual é a maior cidade do Brasil em população?",opts:["Rio de Janeiro","Brasília","São Paulo","Salvador"],correct:2},
+  {q:"Qual o nome do oceano que banha a cidade de Nova York?",opts:["Pacífico","Atlântico","Índico","Ártico"],correct:1},
+  {q:"Qual é o menor continente do mundo?",opts:["Europa","Ásia","Oceania","Antártida"],correct:2},
+  {q:"Onde se localiza o monumento do Cristo Redentor?",opts:["São Paulo","Belo Horizonte","Rio de Janeiro","Curitiba"],correct:2},
+  {q:"Qual país tem o formato de uma 'bota' no mapa?",opts:["Portugal","Itália","Grécia","México"],correct:1},
+  {q:"Qual a capital do Japão?",opts:["Pequim","Seul","Tóquio","Quioto"],correct:2},
+  {q:"Quantos jogadores tem cada time em uma partida de futebol de campo?",opts:["5","10","11","12"],correct:2},
+  {q:"No basquete, quantos pontos vale uma cesta de trás da linha mais distante?",opts:["1","2","3","4"],correct:2},
+  {q:"Em qual esporte se usa o termo 'Xeque-mate'?",opts:["Damas","Xadrez","Poker","Dominó"],correct:1},
+  {q:"Qual brasileiro é conhecido como o 'Rei do Futebol'?",opts:["Zico","Ronaldinho Gaúcho","Pelé","Neymar"],correct:2},
+  {q:"Quantas cores tem a bandeira olímpica?",opts:["3","5","7","1"],correct:1},
+  {q:"Qual é a cor da camisa do líder do Tour de France (Ciclismo)?",opts:["Verde","Vermelha","Amarela","Rosa"],correct:2},
+  {q:"Qual o nome do esporte onde se tenta derrubar 10 pinos com uma bola?",opts:["Golfe","Boliche","Bocha","Críquete"],correct:1},
+  {q:"Onde foram inventados os Jogos Olímpicos da antiguidade?",opts:["Roma","Grécia","Egito","China"],correct:1},
+  {q:"Quem é o pai do Luke Skywalker em Star Wars?",opts:["Obi-Wan Kenobi","Yoda","Darth Vader","Han Solo"],correct:2},
+  {q:"Como se chama a namorada do Mickey?",opts:["Margarida","Minnie","Clarabela","Olívia Palito"],correct:1},
+  {q:"Qual princesa da Disney perdeu o sapatinho de cristal?",opts:["Ariel","Cinderela","Bela","Jasmine"],correct:1},
+  {q:"Qual fruta a madrasta deu para a Branca de Neve?",opts:["Pera","Maçã","Uva","Banana"],correct:1},
+  {q:"Qual o nome do boneco de neve do filme 'Frozen'?",opts:["Sven","Olaf","Kristoff","Hans"],correct:1},
+  {q:"Qual é a moeda oficial dos Estados Unidos?",opts:["Real","Euro","Dólar","Peso"],correct:2},
+  {q:"Quantos dias tem um ano bissexto?",opts:["365","366","360","364"],correct:1},
+  {q:"Quem escreveu a série de livros 'Harry Potter'?",opts:["Stephen King","J.K. Rowling","George R.R. Martin","Monteiro Lobato"],correct:1},
+  {q:"Quem foi o primeiro homem a pisar na Lua?",opts:["Buzz Aldrin","Neil Armstrong","Yuri Gagarin","Marcos Pontes"],correct:1},
+  {q:"Em que ano o Brasil foi descoberto?",opts:["1492","1500","1822","1889"],correct:1},
+  {q:"Qual o nome do navio que afundou em 1912 após bater em um iceberg?",opts:["Queen Mary","Titanic","Bismark","Pérola Negra"],correct:1},
+  {q:"Quem pintou a 'Mona Lisa'?",opts:["Michelangelo","Van Gogh","Leonardo da Vinci","Picasso"],correct:2},
+  {q:"Qual é o maior país do mundo em território?",opts:["Canadá","China","Rússia","Brasil"],correct:2},
+  {q:"Qual o nome da capital do Brasil antes de Brasília?",opts:["Salvador","São Paulo","Rio de Janeiro","Belo Horizonte"],correct:2},
+  {q:"Quem proclamou a Independência do Brasil?",opts:["Pedro Álvares Cabral","Dom Pedro I","Tiradentes","Deodoro da Fonseca"],correct:1},
+  {q:"Qual o coletivo de cães?",opts:["Enxame","Cardume","Matilha","Rebanho"],correct:2},
+  {q:"O que é 'H2O'?",opts:["Suco de uva","Ar","Água","Refrigerante"],correct:2},
+  {q:"Quantas cores tem o arco-íris?",opts:["5","6","7","10"],correct:2},
+  {q:"Qual é o nome do satélite natural da Terra?",opts:["Sol","Lua","Marte","Estrela D'Alva"],correct:1},
+  {q:"Quem é o inimigo jurado do Batman?",opts:["Lex Luthor","Coringa","Duende Verde","Thanos"],correct:1},
+  {q:"O que as abelhas coletam das flores?",opts:["Mel","Néctar","Água","Sementes"],correct:1},
+  {q:"Como se chama o bebê da vaca?",opts:["Leitão","Bezerro","Cabrito","Potro"],correct:1},
+  {q:"Quantas patas tem uma aranha?",opts:["4","6","8","10"],correct:2},
+  {q:"Qual banda de rock britânica era liderada por Freddie Mercury?",opts:["The Beatles","Queen","Pink Floyd","Rolling Stones"],correct:1},
+  {q:"Qual cantora é dona do hit 'Single Ladies'?",opts:["Rihanna","Beyoncé","Lady Gaga","Shakira"],correct:1},
+  {q:"Qual desenho tem um cachorro medroso que caça fantasmas?",opts:["Tom e Jerry","Scooby-Doo","Coragem, o Cão Covarde","Snoopy"],correct:1},
+  {q:"Qual é a plataforma de vídeos mais famosa do mundo?",opts:["Netflix","YouTube","Spotify","WhatsApp"],correct:1},
+  {q:"Em qual país nasceu a cantora Shakira?",opts:["Brasil","México","Colômbia","Espanha"],correct:2},
+  {q:"Qual instrumento musical tem teclas pretas e brancas?",opts:["Violão","Bateria","Piano","Saxofone"],correct:2},
+  {q:"Qual é o elemento químico com o símbolo 'K'?",opts:["Cálcio","Potássio","Criptônio","Carbono"],correct:1},
+  {q:"Qual a velocidade da luz no vácuo?",opts:["100.000 km/s","300.000 km/s","1.000.000 km/s","50.000 km/s"],correct:1},
+  {q:"Qual é a capital da Austrália?",opts:["Sydney","Camberra","Melbourne","Perth"],correct:1},
+  {q:"Quantos ossos tem um bebê ao nascer (aproximadamente)?",opts:["206","150","270 a 300","100"],correct:2},
+  {q:"Em qual ano começou a Primeira Guerra Mundial?",opts:["1939","1914","1900","1945"],correct:1},
+  {q:"Qual país sediou as Olimpíadas de 2016?",opts:["China","Inglaterra","Brasil","Japão"],correct:2},
+  {q:"Quem descobriu a Teoria da Relatividade?",opts:["Isaac Newton","Albert Einstein","Marie Curie","Charles Darwin"],correct:1},
+  {q:"Qual o maior órgão do corpo humano?",opts:["Intestino","Fígado","Pele","Cérebro"],correct:2},
+  {q:"Qual a cor da caixa-preta dos aviões?",opts:["Preta","Laranja","Vermelha","Amarela"],correct:1},
+  {q:"Quem escreveu 'A Divina Comédia'?",opts:["Shakespeare","Dante Alighieri","Homero","Platão"],correct:1},
+  {q:"Em que continente fica o Egito?",opts:["Ásia","África","Europa","Oceania"],correct:1},
+  {q:"Qual o nome da energia gerada pelo vento?",opts:["Solar","Eólica","Hidrelétrica","Térmica"],correct:1},
+  {q:"Quem foi a primeira mulher a ganhar um Prêmio Nobel?",opts:["Madre Teresa","Marie Curie","Anne Frank","Malala"],correct:1},
+  {q:"Qual o animal símbolo do WWF?",opts:["Leão","Urso Panda","Elefante","Baleia"],correct:1},
+  {q:"Qual a principal matéria-prima do vidro?",opts:["Petróleo","Areia","Ferro","Madeira"],correct:1},
+  {q:"O que significa a sigla CEP?",opts:["Código de Endereço Particular","Código de Endereçamento Postal","Centro de Entrega de Produtos","Cadastro Estadual de Pessoas"],correct:1},
+  {q:"Qual o animal mais pesado do mundo?",opts:["Elefante","Baleia Azul","Tubarão Baleia","Rinoceronte"],correct:1},
+  {q:"Qual fruta é a base do Guacamole?",opts:["Manga","Abacate","Tomate","Limão"],correct:1},
+  {q:"Em qual país nasceu o Papa Francisco?",opts:["Itália","Brasil","Argentina","Polônia"],correct:2},
+  {q:"Quantas letras tem o alfabeto brasileiro atual?",opts:["23","25","26","28"],correct:2},
+  {q:"O que os pandas comem quase exclusivamente?",opts:["Peixe","Carne","Bambu","Frutas"],correct:2},
+  {q:"Como se chama o profissional que estuda os fósseis?",opts:["Arqueólogo","Paleontólogo","Geólogo","Biólogo"],correct:1},
+  {q:"Qual é a última letra do alfabeto grego?",opts:["Alfa","Beta","Ômega","Delta"],correct:2},
+  {q:"Qual o nome do passarinho amarelo, melhor amigo do Snoopy?",opts:["Piopio","Woodstock","Canário","Tweety"],correct:1},
+  {q:"Qual elemento químico tem o símbolo 'Fe'?",opts:["Fósforo","Flúor","Ferro","Fermio"],correct:2},
+  {q:"Quem é conhecido como o 'Pai da Aviação'?",opts:["Irmãos Wright","Santos Dumont","Leonardo da Vinci","Thomas Edison"],correct:1},
+  {q:"Qual destes animais NÃO é um mamífero?",opts:["Baleia","Morcego","Tubarão","Ornitorrinco"],correct:2},
+  {q:"No jogo de Xadrez, qual peça se movimenta apenas em 'L'?",opts:["Bispo","Torre","Cavalo","Rainha"],correct:2},
+  {q:"Qual o nome do robô protagonista da Disney que compacta lixo?",opts:["Baymax","Wall-E","R2-D2","Bumblebee"],correct:1},
+  {q:"Qual fruta é a casa do Bob Esponja?",opts:["Maçã","Abacaxi","Melancia","Coco"],correct:1},
+  {q:"Qual é o maior planeta do Sistema Solar?",opts:["Terra","Saturno","Júpiter","Netuno"],correct:2},
+  {q:"Quem pintou o quadro 'Abaporu', marco do modernismo brasileiro?",opts:["Anita Malfatti","Tarsila do Amaral","Di Cavalcanti","Candido Portinari"],correct:1},
+  {q:"Qual é o coletivo de abelhas?",opts:["Alcateia","Cardume","Enxame","Rebanho"],correct:2},
+  {q:"Quantos minutos tem uma hora e meia?",opts:["60","90","100","120"],correct:1},
+  {q:"Qual país sediou a Copa do Mundo de 2022?",opts:["Brasil","Rússia","Catar","Argentina"],correct:2},
+  {q:"Qual a montanha mais alta do Brasil?",opts:["Monte Roraima","Pico da Neblina","Pico da Bandeira","Pão de Açúcar"],correct:1},
+  {q:"Quem é o autor de 'A Turma da Mônica'?",opts:["Ziraldo","Mauricio de Sousa","Monteiro Lobato","Ruth Rocha"],correct:1},
+  {q:"Qual o nome da cientista que estudou a radioatividade e ganhou dois prêmios Nobel?",opts:["Ada Lovelace","Marie Curie","Rosalind Franklin","Margaret Thatcher"],correct:1},
+  {q:"Quantas cores tem a bandeira do Brasil (sem letras)?",opts:["2","3","4","5"],correct:2},
+  {q:"O 'Saci-Pererê' tem quantas pernas?",opts:["Nenhuma","Uma","Duas","Três"],correct:1},
+  {q:"Qual o resultado de 7 x 8?",opts:["54","56","62","64"],correct:1},
+  {q:"Quem é o vilão roxo da Marvel que quer as Joias do Infinito?",opts:["Loki","Thanos","Ultron","Magneto"],correct:1},
+  {q:"Qual é a capital do estado de Minas Gerais?",opts:["Uberlândia","Belo Horizonte","Juiz de Fora","Contagem"],correct:1},
+  {q:"O que as vacas bebem?",opts:["Leite","Água","Suco","Café"],correct:1},
+  {q:"Qual o nome da princesa que dormiu por 100 anos?",opts:["Branca de Neve","Cinderela","Aurora (Bela Adormecida)","Rapunzel"],correct:2},
+  {q:"Qual é o nome do processo em que a água vira gelo?",opts:["Fusão","Solidificação","Evaporação","Sublimação"],correct:1},
+  {q:"Quem descobriu o caminho marítimo para as Índias?",opts:["Pedro Álvares Cabral","Vasco da Gama","Cristóvão Colombo","Américo Vespúcio"],correct:1},
+  {q:"Qual é o planeta vermelho?",opts:["Vênus","Marte","Mercúrio","Júpiter"],correct:1},
+  {q:"Quantos milímetros tem um centímetro?",opts:["1","5","10","100"],correct:2},
+  {q:"Qual o nome do marinheiro que come espinafre?",opts:["Brutus","Popeye","Sinbad","Jack Sparrow"],correct:1},
+  {q:"Qual é a cor da esmeralda?",opts:["Azul","Vermelho","Verde","Amarelo"],correct:2},
+  {q:"Qual cantor é conhecido como o 'Rei do Rock'?",opts:["Michael Jackson","Elvis Presley","Freddie Mercury","Mick Jagger"],correct:1},
+  {q:"Quantas patas tem uma formiga?",opts:["4","6","8","10"],correct:1},
+  {q:"Quem escreveu o livro 'O Pequeno Príncipe'?",opts:["Ziraldo","Antoine de Saint-Exupéry","J.K. Rowling","Charles Dickens"],correct:1},
+  {q:"Qual o bicho que transmite a Dengue?",opts:["Abelha","Mosquito Aedes aegypti","Mosca doméstica","Barata"],correct:1},
+  {q:"Qual é o instrumento usado para medir a temperatura?",opts:["Barômetro","Termômetro","Régua","Balança"],correct:1},
+  {q:"Em qual cidade fica a Estátua da Liberdade?",opts:["Washington","Miami","Nova York","Los Angeles"],correct:2},
+  {q:"Qual é o animal que representa a sabedoria?",opts:["Raposa","Leão","Coruja","Elefante"],correct:2},
+  {q:"Quantos anos tem um século?",opts:["10","50","100","1000"],correct:2},
+  {q:"Qual o nome do criador do Mickey Mouse?",opts:["Stan Lee","Walt Disney","Steven Spielberg","George Lucas"],correct:1},
+  {q:"Qual é o gás que nós respiramos para sobreviver?",opts:["Gás Carbônico","Oxigênio","Nitrogênio","Hélio"],correct:1},
+  {q:"Quantos estados tem o Brasil?",opts:["25","26","27","13"],correct:1},
+  {q:"Qual é a maior ave do mundo (não voa)?",opts:["Pinguim","Galinha","Avestruz","Condor"],correct:2},
+  {q:"O que é um 'Iceberg'?",opts:["Uma montanha de terra","Um bloco gigante de gelo flutuante","Um tipo de sorvete","Um vulcão frio"],correct:1},
+  {q:"Qual a capital da Espanha?",opts:["Barcelona","Madri","Sevilha","Lisboa"],correct:1},
+  {q:"Qual é o animal mais alto do mundo?",opts:["Elefante","Girafa","Canguru","Dinossauro"],correct:1},
+  {q:"Em que lado do corpo fica o coração (na maioria das pessoas)?",opts:["Direito","Esquerdo","No centro exato","Nas costas"],correct:1},
+  {q:"Qual é o mês do Natal?",opts:["Janeiro","Outubro","Novembro","Dezembro"],correct:3},
+  {q:"Qual é o metal usado nos termômetros antigos?",opts:["Ferro","Prata","Mercúrio","Cobre"],correct:2},
+  {q:"Qual é o nome da técnica de dobrar papel?",opts:["Caratê","Origami","Sushi","Bonsai"],correct:1},
+  {q:"Quem foi o autor de 'Dom Quixote'?",opts:["Dante","Miguel de Cervantes","Shakespeare","Machado de Assis"],correct:1},
+  {q:"Quantas cores tem o arco-íris?",opts:["3","5","7","9"],correct:2},
+  {q:"Qual a capital da Rússia?",opts:["Kiev","São Petersburgo","Moscou","Varsóvia"],correct:2},
+  {q:"Qual é o oceano mais profundo?",opts:["Atlântico","Pacífico","Índico","Ártico"],correct:1},
+  {q:"Qual é o nome do cientista que formulou a Teoria da Evolução?",opts:["Einstein","Charles Darwin","Isaac Newton","Louis Pasteur"],correct:1},
+  {q:"Qual é a maior floresta do mundo?",opts:["Floresta Negra","Mata Atlântica","Floresta Amazônica","Taiga"],correct:2},
+  {q:"Qual o bicho que morre se sair da água?",opts:["Jacaré","Tartaruga","Peixe","Sapo"],correct:2},
+  {q:"Quem escreveu 'Romeu e Julieta'?",opts:["Victor Hugo","William Shakespeare","Lord Byron","Oscar Wilde"],correct:1},
+  {q:"Qual a cor da caixa-preta dos aviões?",opts:["Preta","Laranja","Vermelha","Branca"],correct:1},
+  {q:"Qual a capital da Itália?",opts:["Veneza","Milão","Roma","Nápoles"],correct:2},
+  {q:"Qual é a moeda oficial do Reino Unido?",opts:["Dólar","Euro","Libra Esterlina","Iene"],correct:2},
+  {q:"Qual país inventou o papel?",opts:["Egito","China","Grécia","Índia"],correct:1},
+  {q:"Qual a vitamina que o sol ajuda a produzir?",opts:["A","C","D","K"],correct:2},
+  {q:"Qual é o nome do deserto mais quente do mundo?",opts:["Atacama","Saara","Gobi","Kalahari"],correct:1},
+  {q:"Qual o principal componente do ar?",opts:["Oxigênio","Nitrogênio","Hidrogênio","Gás Carbônico"],correct:1},
+  {q:"Qual o nome da maior pirâmide do Egito?",opts:["Miquerinos","Quéfren","Quéops","Esfinge"],correct:2},
+  {q:"Qual o nome do osso da coxa (o maior do corpo)?",opts:["Tíbia","Fêmur","Rádio","Patela"],correct:1},
+  {q:"Em que ano terminou a 2ª Guerra Mundial?",opts:["1918","1939","1945","1950"],correct:2},
+  {q:"Qual a capital de Portugal?",opts:["Porto","Coimbra","Lisboa","Braga"],correct:2},
+  {q:"Qual é o animal que produz seda?",opts:["Aranha","Bicho-da-seda (Lagarta)","Abelha","Besouro"],correct:1},
+  {q:"Qual é a maior ilha do mundo?",opts:["Austrália","Groenlândia","Madagascar","Japão"],correct:1},
+  {q:"Quantos planetas tem o Sistema Solar?",opts:["7","8","9","10"],correct:1},
+  {q:"Quem é o deus dos mares na mitologia grega?",opts:["Zeus","Hades","Poseidon","Ares"],correct:2},
+  {q:"Qual a capital do Canadá?",opts:["Toronto","Vancouver","Ottawa","Montreal"],correct:2},
+  {q:"Qual fruta tem a semente por fora?",opts:["Melancia","Morango","Uva","Laranja"],correct:1},
+  {q:"Qual o nome do primeiro homem a ir ao espaço?",opts:["Neil Armstrong","Yuri Gagarin","Buzz Aldrin","Marcos Pontes"],correct:1},
+  {q:"Qual país é o maior produtor de café do mundo?",opts:["Vietnã","Colômbia","Brasil","Etiópia"],correct:2},
+  {q:"Qual o nome do famoso detetive que mora na Baker Street?",opts:["Hercule Poirot","Sherlock Holmes","James Bond","Batman"],correct:1},
+  {q:"Qual a capital da Argentina?",opts:["Santiago","Buenos Aires","Montevidéu","Rosário"],correct:1},
+  {q:"Qual o nome da camada que protege a Terra dos raios UV?",opts:["Camada de Atmosfera","Camada de Ozônio","Camada de Oxigênio","Crosta Terrestre"],correct:1},
+  {q:"Qual é o esporte praticado no torneio de Roland Garros?",opts:["Futebol","Tênis","Golfe","Vôlei"],correct:1},
+  {q:"Qual a capital do Uruguai?",opts:["Assunção","Santiago","Montevidéu","La Paz"],correct:2},
+  {q:"Qual o nome da pequena sereia da Disney?",opts:["Bela","Ariel","Moana","Elsa"],correct:1},
+  {q:"Qual a capital da China?",opts:["Xangai","Hong Kong","Pequim","Taiwan"],correct:2},
+  {q:"Qual é o nome do mestre dos Tartarugas Ninja?",opts:["Mestre Yoda","Mestre Splinter","Mestre Kame","Mestre Shifu"],correct:1},
+  {q:"Qual o nome do vulcão que destruiu Pompeia?",opts:["Etna","Vesúvio","Krakatoa","Fuji"],correct:1}
+];
+
+// ==================== STATE ====================
+let questions = JSON.parse(localStorage.getItem('pqr_questions') || 'null') || shuffle([...INITIAL_QUESTIONS]);
+let ranking = JSON.parse(localStorage.getItem('pqr_ranking') || '[]');
+let tournament = JSON.parse(localStorage.getItem('pqr_tournament') || 'null');
+let usedQuestionsThisTournament = JSON.parse(localStorage.getItem('pqr_used_q') || '[]');
+
+let currentMatch = null;
+let matchState = null;
+
+// ==================== UTILS ====================
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function save() {
+  localStorage.setItem('pqr_questions', JSON.stringify(questions));
+  localStorage.setItem('pqr_ranking', JSON.stringify(ranking));
+  if (tournament) localStorage.setItem('pqr_tournament', JSON.stringify(tournament));
+  localStorage.setItem('pqr_used_q', JSON.stringify(usedQuestionsThisTournament));
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function notify(msg, dur = 2500) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.remove('hidden');
+  clearTimeout(n._t);
+  n._t = setTimeout(() => n.classList.add('hidden'), dur);
+}
+function switchTab(tabId, btn) {
+  document.getElementById('tabView').style.display = 'none';
+  document.getElementById('tabAdd').style.display = 'none';
+  document.getElementById(tabId).style.display = 'block';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function shuffleQuestions() {
+  questions = shuffle(questions);
+  save();
+  notify('Perguntas embaralhadas! 🔀');
+}
+
+// ==================== SETUP ====================
+function initSetup() {
+  const grid = document.getElementById('playerCountGrid');
+  grid.innerHTML = '';
+  for (let i = 2; i <= 32; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'count-btn';
+    btn.textContent = i;
+    btn.onclick = () => selectPlayerCount(i);
+    grid.appendChild(btn);
+  }
+  selectPlayerCount(4);
+}
+function selectPlayerCount(n) {
+  document.querySelectorAll('.count-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.textContent) === n);
+  });
+  const wrap = document.getElementById('playerInputs');
+  wrap.innerHTML = '';
+  for (let i = 1; i <= n; i++) {
+    wrap.innerHTML += `<div class="player-input-wrap"><span class="player-num">${i}</span><input type="text" placeholder="Jogador ${i}" id="pname_${i}"></div>`;
+  }
+}
+function getSelectedCount() {
+  const sel = document.querySelector('.count-btn.selected');
+  return sel ? parseInt(sel.textContent) : 4;
+}
+function startTournament() {
+  const n = getSelectedCount();
+  const players = [];
+  for (let i = 1; i <= n; i++) {
+    const val = document.getElementById(`pname_${i}`).value.trim() || `Jogador ${i}`;
+    players.push(val);
+  }
+  usedQuestionsThisTournament = [];
+  tournament = buildTournament(players);
+  save();
+  showBracket();
+}
+
+// ==================== BRACKET LOGIC ====================
+function buildTournament(players) {
+  const shuffled = shuffle([...players]);
+  const n = shuffled.length;
+  // Find next power of 2
+  let size = 1;
+  while (size < n) size *= 2;
+  const byes = size - n;
+  // Fill bracket: some players get byes
+  const slots = [...shuffled];
+  for (let i = 0; i < byes; i++) slots.push(null); // null = bye
+
+  // Build round 1 matches
+  const rounds = [];
+  const r1 = [];
+  for (let i = 0; i < size; i += 2) {
+    r1.push({ p1: slots[i], p2: slots[i+1], winner: null, score1: 0, score2: 0, done: false });
+  }
+  rounds.push(r1);
+
+  // Build subsequent rounds (empty)
+  let prev = r1;
+  while (prev.length > 1) {
+    const nr = [];
+    for (let i = 0; i < prev.length; i += 2) {
+      nr.push({ p1: null, p2: null, winner: null, score1: 0, score2: 0, done: false });
+    }
+    rounds.push(nr);
+    prev = nr;
+  }
+
+  // Auto-resolve byes in round 1
+  for (const m of rounds[0]) {
+    if (m.p2 === null) {
+      m.winner = m.p1;
+      m.done = true;
+    } else if (m.p1 === null) {
+      m.winner = m.p2;
+      m.done = true;
+    }
+  }
+  advanceWinners(rounds, 0);
+
+  // Repechage: if odd number needing extra match
+  // (already handled by bye system)
+
+  return { rounds, players, champion: null, currentRound: 0 };
+}
+
+function advanceWinners(rounds, roundIdx) {
+  if (roundIdx + 1 >= rounds.length) return;
+  const cur = rounds[roundIdx];
+  const next = rounds[roundIdx + 1];
+  for (let i = 0; i < cur.length; i += 2) {
+    const mi = Math.floor(i / 2);
+    if (cur[i].winner) next[mi].p1 = cur[i].winner;
+    if (cur[i+1] && cur[i+1].winner) next[mi].p2 = cur[i+1].winner;
+    // Auto-resolve if both slots filled with same (shouldn't happen) or if only 1 competitor
+    if (next[mi].p1 && !next[mi].p2 && next[mi].p2 === undefined) {
+      next[mi].winner = next[mi].p1; next[mi].done = true;
+    }
+  }
+}
+
+function getRoundName(totalRounds, roundIdx) {
+  const remaining = totalRounds - roundIdx;
+  if (remaining === 1) return 'FINAL';
+  if (remaining === 2) return 'SEMIFINAL';
+  if (remaining === 3) return 'QUARTAS DE FINAL';
+  if (remaining === 4) return 'OITAVAS DE FINAL';
+  return `RODADA ${roundIdx + 1}`;
+}
+
+// ==================== BRACKET RENDER ====================
+function showBracket() {
+  if (!tournament) { notify('Nenhum torneio ativo'); return; }
+  showScreen('bracketScreen');
+  renderBracket();
+}
+
+function renderBracket() {
+  const { rounds } = tournament;
+  const scroll = document.getElementById('bracketScroll');
+  scroll.innerHTML = '';
+  const totalRounds = rounds.length;
+
+  rounds.forEach((round, ri) => {
+    const col = document.createElement('div');
+    col.className = 'bracket-round';
+    const label = document.createElement('div');
+    label.className = 'round-label';
+    label.textContent = getRoundName(totalRounds, ri);
+    col.appendChild(label);
+
+    round.forEach((match, mi) => {
+      const card = document.createElement('div');
+      card.className = 'match-card';
+      if (match.done) card.classList.add('done');
+      else if (isNextMatch(rounds, ri, mi)) card.classList.add('active');
+
+      const p1 = match.p1 || '⌛ Aguardando';
+      const p2 = match.p2 || (match.done ? '' : '⌛ Aguardando');
+      const isBye1 = match.p1 && !match.p2 && match.done;
+
+      card.innerHTML = `
+        <div class="match-player ${match.winner === match.p1 ? 'winner' : (match.done ? 'loser' : '')}">
+          <span>${p1}</span>
+          ${match.done ? `<span class="player-score-badge">${match.score1}</span>` : ''}
+        </div>
+        <div class="match-player ${match.winner === match.p2 ? 'winner' : (match.done ? 'loser' : '')} ${isBye1 ? 'bye' : ''}">
+          <span>${isBye1 ? 'BYE (automático)' : p2}</span>
+          ${match.done && !isBye1 ? `<span class="player-score-badge">${match.score2}</span>` : ''}
+        </div>
+      `;
+
+      if (!match.done && match.p1 && match.p2 && isNextMatch(rounds, ri, mi)) {
+        card.onclick = () => startMatch(ri, mi);
+        card.title = 'Clique para jogar!';
+      }
+      col.appendChild(card);
+    });
+    scroll.appendChild(col);
+  });
+
+  const actions = document.getElementById('bracketActions');
+  // Find next playable match
+  const next = findNextMatch();
+  if (next) {
+    actions.innerHTML = `<button class="btn" onclick="startMatch(${next.ri},${next.mi})">▶ Jogar Próxima Partida</button>`;
+  } else if (tournament.champion) {
+    actions.innerHTML = `<button class="btn" onclick="showChampion()">🏆 Ver Campeão</button>`;
+  } else {
+    actions.innerHTML = '';
+  }
+
+  document.getElementById('bracketSubtitle').textContent = `${tournament.players.length} jogadores`;
+}
+
+function isNextMatch(rounds, ri, mi) {
+  const m = rounds[ri][mi];
+  if (m.done || !m.p1 || !m.p2) return false;
+  // Check all previous rounds are done for this slot
+  for (let r = 0; r < ri; r++) {
+    if (rounds[r].some(x => !x.done)) return false;
+  }
+  return true;
+}
+
+function findNextMatch() {
+  if (!tournament) return null;
+  const { rounds } = tournament;
+  for (let ri = 0; ri < rounds.length; ri++) {
+    for (let mi = 0; mi < rounds[ri].length; mi++) {
+      const m = rounds[ri][mi];
+      if (!m.done && m.p1 && m.p2) return { ri, mi };
+    }
+    // If this round has undone matches without both players, wait
+    if (rounds[ri].some(m => !m.done)) return null;
+  }
+  return null;
+}
+
+// ==================== GAME ====================
+function startMatch(ri, mi) {
+  const m = tournament.rounds[ri][mi];
+  currentMatch = { ri, mi };
+  matchState = {
+    p1: m.p1, p2: m.p2,
+    score1: 0, score2: 0,
+    currentPlayer: 0, // 0 or 1
+    questionsDone: 0,
+    maxQuestions: 10, // enough for best of 5
+    answered: false,
+    revealed: false
+  };
+
+  // Pre-load questions for this match
+  matchState.matchQuestions = getMatchQuestions(10);
+
+  updateGameUI();
+  showScreen('gameScreen');
+  loadQuestion();
+}
+
+function getMatchQuestions(n) {
+  const available = questions.filter((_, i) => !usedQuestionsThisTournament.includes(i));
+  if (available.length < n) {
+    // Reset used if not enough
+    usedQuestionsThisTournament = [];
+    return shuffle([...questions]).slice(0, n).map(q => ({ ...q }));
+  }
+  const picked = shuffle([...available]).slice(0, n);
+  // Mark as used
+  picked.forEach(q => {
+    const idx = questions.indexOf(q);
+    if (idx !== -1) usedQuestionsThisTournament.push(idx);
+  });
+  save();
+  return picked;
+}
+
+function updateGameUI() {
+  const { ri } = currentMatch;
+  const totalRounds = tournament.rounds.length;
+  document.getElementById('roundLabel').textContent = getRoundName(totalRounds, ri);
+  document.getElementById('matchLabel').textContent = `${matchState.p1} ⚡ ${matchState.p2}`;
+  document.getElementById('scoreName0').textContent = matchState.p1;
+  document.getElementById('scoreName1').textContent = matchState.p2;
+  document.getElementById('scoreVal0').textContent = matchState.score1;
+  document.getElementById('scoreVal1').textContent = matchState.score2;
+  document.getElementById('scoreBlock0').classList.toggle('active-player', matchState.currentPlayer === 0);
+  document.getElementById('scoreBlock1').classList.toggle('active-player', matchState.currentPlayer === 1);
+  const curName = matchState.currentPlayer === 0 ? matchState.p1 : matchState.p2;
+  document.getElementById('turnIndicator').textContent = `🎯 Vez de: ${curName}`;
+}
+
+let currentQIndex = 0;
+function loadQuestion() {
+  if (checkMatchOver()) return;
+  currentQIndex = matchState.questionsDone;
+  if (currentQIndex >= matchState.matchQuestions.length) {
+    // Need more questions
+    const extra = getMatchQuestions(5);
+    matchState.matchQuestions.push(...extra);
+  }
+  const q = matchState.matchQuestions[currentQIndex];
+  matchState.answered = false;
+  matchState.revealed = false;
+
+  document.getElementById('qNumber').textContent = `PERGUNTA ${currentQIndex + 1}`;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('feedbackDiv').style.display = 'none';
+  document.getElementById('questionCard').style.display = 'block';
+
+  const total = matchState.matchQuestions.length;
+  const prog = (currentQIndex / total) * 100;
+  document.getElementById('progressFill').style.width = prog + '%';
+  document.getElementById('qCounter').textContent = `P${currentQIndex+1}`;
+
+  const letters = ['A', 'B', 'C', 'D'];
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectOption(i);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('btnPass').style.display = '';
+  document.getElementById('btnWrong').style.display = 'none';
+  document.getElementById('btnCorrect').style.display = 'none';
+  document.getElementById('btnReveal').style.display = '';
+
+  updateGameUI();
+}
+
+function selectOption(idx) {
+  if (matchState.answered) return;
+  matchState.answered = true;
+  const q = matchState.matchQuestions[currentQIndex];
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach((b, i) => {
+    if (i === q.correct) b.classList.add('correct');
+    else if (i === idx) b.classList.add('wrong');
+  });
+  document.getElementById('btnPass').style.display = 'none';
+  document.getElementById('btnReveal').style.display = 'none';
+
+  if (idx === q.correct) {
+    showFeedback('correct', '✅ Correto!');
+    document.getElementById('btnCorrect').style.display = '';
+    document.getElementById('btnWrong').style.display = 'none';
+  } else {
+    showFeedback('wrong', '❌ Errado!');
+    document.getElementById('btnWrong').style.display = '';
+    document.getElementById('btnCorrect').style.display = 'none';
+  }
+}
+
+function revealAnswer() {
+  if (matchState.revealed) return;
+  matchState.revealed = true;
+  const q = matchState.matchQuestions[currentQIndex];
+  document.querySelectorAll('.opt-btn')[q.correct].classList.add('reveal');
+  document.getElementById('btnReveal').style.display = 'none';
+  document.getElementById('btnPass').style.display = 'none';
+  document.getElementById('btnCorrect').style.display = '';
+  document.getElementById('btnWrong').style.display = '';
+}
+
+function passQuestion() {
+  showFeedback('skip', '↔ Passou!');
+  matchState.questionsDone++;
+  matchState.currentPlayer = matchState.currentPlayer === 0 ? 1 : 0;
+  document.getElementById('btnPass').style.display = 'none';
+  setTimeout(() => { loadQuestion(); }, 1200);
+}
+
+function markCorrect() {
+  if (matchState.currentPlayer === 0) matchState.score1++;
+  else matchState.score2++;
+  matchState.questionsDone++;
+  document.getElementById('btnCorrect').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'none';
+  // Alternate player
+  matchState.currentPlayer = matchState.currentPlayer === 0 ? 1 : 0;
+  save();
+  if (!checkMatchOver()) {
+    setTimeout(() => loadQuestion(), 1200);
+  }
+}
+
+function markWrong() {
+  matchState.questionsDone++;
+  document.getElementById('btnCorrect').style.display = 'none';
+  document.getElementById('btnWrong').style.display = 'none';
+  matchState.currentPlayer = matchState.currentPlayer === 0 ? 1 : 0;
+  if (!checkMatchOver()) {
+    setTimeout(() => loadQuestion(), 1200);
+  }
+}
+
+function showFeedback(type, msg) {
+  const div = document.getElementById('feedbackDiv');
+  div.className = `answer-feedback ${type}-fb`;
+  div.textContent = msg;
+  div.style.display = 'block';
+}
+
+function checkMatchOver() {
+  const { score1, score2 } = matchState;
+  // Best of 5: first to 3
+  if (score1 >= 3 || score2 >= 3) {
+    const winner = score1 >= 3 ? matchState.p1 : matchState.p2;
+    const loser = score1 >= 3 ? matchState.p2 : matchState.p1;
+    const wScore = score1 >= 3 ? score1 : score2;
+    const lScore = score1 >= 3 ? score2 : score1;
+    showMatchWinner(winner, loser, wScore, lScore);
+    return true;
+  }
+  return false;
+}
+
+function showMatchWinner(winner, loser, ws, ls) {
+  document.getElementById('modalWinnerName').textContent = winner;
+  document.getElementById('modalWinnerSub').textContent = `Venceu ${ws} × ${ls} contra ${loser}`;
+  document.getElementById('matchWinnerModal').classList.remove('hidden');
+
+  // Update tournament
+  const { ri, mi } = currentMatch;
+  const m = tournament.rounds[ri][mi];
+  m.winner = winner;
+  m.score1 = matchState.score1;
+  m.score2 = matchState.score2;
+  m.done = true;
+
+  // Update ranking
+  updateRanking(winner, loser);
+  advanceWinners(tournament.rounds, ri);
+  // Check champion
+  const lastRound = tournament.rounds[tournament.rounds.length - 1];
+  if (lastRound[0].done && lastRound[0].winner) {
+    tournament.champion = lastRound[0].winner;
+  }
+  save();
+}
+
+function advanceBracket() {
+  document.getElementById('matchWinnerModal').classList.add('hidden');
+  if (tournament.champion) {
+    showChampion();
+  } else {
+    showBracket();
+  }
+}
+
+function showChampion() {
+  document.getElementById('matchWinnerModal').classList.add('hidden');
+  const champ = tournament.champion;
+  document.getElementById('champName').textContent = champ;
+  const r = ranking.find(x => x.name === champ);
+  document.getElementById('champStats').textContent = r ? `${r.wins} vitórias no torneio` : '';
+  document.getElementById('championModal').classList.remove('hidden');
+  launchConfetti();
+}
+
+function launchConfetti() {
+  const colors = ['#FF6B00','#FFD700','#00E676','#2979FF','#AA00FF','#FF1744'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left:${Math.random()*100}vw;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${2+Math.random()*3}s;
+      animation-delay:${Math.random()*2}s;
+      width:${6+Math.random()*10}px;
+      height:${6+Math.random()*10}px;
+      transform:rotate(${Math.random()*360}deg);
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 6000);
+  }
+}
+
+function confirmQuit() {
+  if (confirm('Sair da partida atual? O progresso será perdido.')) {
+    showBracket();
+  }
+}
+
+// ==================== RANKING ====================
+function updateRanking(winner, loser) {
+  let wr = ranking.find(r => r.name === winner);
+  if (!wr) { wr = { name: winner, wins: 0, losses: 0, games: 0 }; ranking.push(wr); }
+  wr.wins++; wr.games++;
+
+  let lr = ranking.find(r => r.name === loser);
+  if (!lr) { lr = { name: loser, wins: 0, losses: 0, games: 0 }; ranking.push(lr); }
+  lr.losses++; lr.games++;
+}
+
+function renderRanking() {
+  const list = document.getElementById('rankingList');
+  if (!ranking.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px;">Nenhum dado ainda. Jogue uma partida!</div>';
+    return;
+  }
+  const sorted = [...ranking].sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+  list.innerHTML = sorted.map((r, i) => {
+    const posClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const pct = r.games ? Math.round((r.wins/r.games)*100) : 0;
+    return `<div class="rank-item">
+      <div class="rank-pos ${posClass}">${i+1}</div>
+      <div class="rank-name">${r.name}</div>
+      <div class="rank-stat">
+        <div class="rank-wins">${r.wins}V ${r.losses}D</div>
+        <div class="rank-games">${r.games} jogos · ${pct}% vitórias</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearRanking() {
+  if (confirm('Limpar todo o histórico de ranking?')) {
+    ranking = [];
+    save();
+    renderRanking();
+    notify('Ranking limpo!');
+  }
+}
+
+// ==================== QUESTIONS SCREEN ====================
+function renderQuestionList() {
+  const list = document.getElementById('questionList');
+  document.getElementById('qCountLabel').textContent = `${questions.length} perguntas no banco`;
+  list.innerHTML = questions.map((q, i) => `
+    <div class="q-list-item">
+      <div class="q-list-num">${i+1}</div>
+      <div class="q-list-text">
+        <strong>${q.q}</strong><br>
+        <span style="color:var(--green)">✓ ${q.opts[q.correct]}</span>
+      </div>
+      <button class="q-del" onclick="deleteQuestion(${i})" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+function deleteQuestion(i) {
+  if (questions.length <= 20) { notify('Mínimo 20 perguntas no banco!'); return; }
+  questions.splice(i, 1);
+  save();
+  renderQuestionList();
+  notify('Pergunta removida');
+}
+
+function setupAddForm() {
+  const form = document.getElementById('optionsForms');
+  const letters = ['A','B','C','D'];
+  form.innerHTML = letters.map((l, i) => `
+    <div>
+      <label class="form-label">${l}</label>
+      <input type="text" id="opt_${i}" placeholder="Opção ${l}...">
+      <div class="correct-mark"><input type="radio" name="correct" value="${i}" id="cor_${i}"> <label for="cor_${i}">Esta é a correta</label></div>
+    </div>
+  `).join('');
+}
+
+function addQuestion() {
+  const qText = document.getElementById('newQText').value.trim();
+  if (!qText) { notify('Digite a pergunta!'); return; }
+  const opts = [];
+  for (let i = 0; i < 4; i++) {
+    const v = document.getElementById(`opt_${i}`).value.trim();
+    if (!v) { notify(`Preencha a opção ${['A','B','C','D'][i]}!`); return; }
+    opts.push(v);
+  }
+  const correctEl = document.querySelector('input[name="correct"]:checked');
+  if (!correctEl) { notify('Marque a resposta correta!'); return; }
+  const correct = parseInt(correctEl.value);
+  questions.push({ q: qText, opts, correct });
+  save();
+  notify('✅ Pergunta adicionada!');
+  document.getElementById('newQText').value = '';
+  document.getElementById('optionsForms').querySelectorAll('input[type="text"]').forEach(i => i.value = '');
+  document.querySelectorAll('input[name="correct"]').forEach(r => r.checked = false);
+  switchTab('tabView', document.querySelector('.tab-btn'));
+  renderQuestionList();
+}
+
+// ==================== INIT ====================
+initSetup();
+setupAddForm();
+
+// If tournament exists, show bracket option
+if (tournament) {
+  const existing = document.createElement('div');
+  existing.style.cssText = 'text-align:center;margin-top:12px;color:var(--text2);font-size:13px;';
+  existing.textContent = '⚡ Torneio em andamento';
+  document.getElementById('homeScreen').querySelector('.menu-grid').after(existing);
+}
+</script>
+</body>
+</html>
